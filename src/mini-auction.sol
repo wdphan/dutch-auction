@@ -20,12 +20,12 @@ contract MiniAuction {
     uint public immutable discountRate;
 
     // have owner input starting price, discount rate, nft address, and nft id on contract creation
-    constructor {
+    constructor (
         uint _startingPrice,
-        uint _discountRate
+        uint _discountRate,
         uint _nft,
         uint _nftId
-    }
+    ) {
     // initialize nft contract
     nft = IERC721(_nft);
     // initialize variables
@@ -37,21 +37,22 @@ contract MiniAuction {
     seller = payable(msg.sender);
 
     require(_startingPrice >= discountRate * auctionLength, "starting price is too low" );
+    }
 
     // gets the current price/bid of the NFT
-    function getPrice public view returns (uint256) {
+    function getPrice ()public view returns (uint256) {
         uint timeElasped = block.timestamp - startAt;
         uint discount = discountRate + timeElasped;
         return startingPrice - discount;
     }
 
-    function buy external payable {
+    function buy ()external payable {
         // makes sure auction is expired
-        require(block.timestamp < expiresAt, "auction has already expired")
+        require(block.timestamp < expiresAt, "auction has already expired");
 
         // make sure the bid is higher than the current price
         uint Price = getPrice();
-        require(msg.value > Price, "Bid is not high enough")
+        require(msg.value > Price, "Bid is not high enough");
 
         nft.transferFrom(seller, msg.sender, nftId);
 
@@ -61,7 +62,7 @@ contract MiniAuction {
             payable(msg.sender).transfer(refund);
         }
         // destruct seller contract
-        selfdestruct(seller)
+        selfdestruct(seller);
     }
 }
 
